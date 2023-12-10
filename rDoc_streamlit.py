@@ -4,9 +4,12 @@ import plotly.express as px
 import openpyxl
 
 # Function to load and process the Excel file
-@st.cache
+@st.experimental_singleton  # Updated caching function
 def load_excel(file):
     df = pd.read_excel(file)
+    # Ensure numeric columns are correctly formatted
+    for col in df.columns[1:]:  # Assuming first column is not numeric
+        df[col] = pd.to_numeric(df[col], errors='coerce')
     return df
 
 # Streamlit app
