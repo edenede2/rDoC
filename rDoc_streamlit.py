@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import openpyxl
 
 # Function to load and process the Excel file
 @st.cache
