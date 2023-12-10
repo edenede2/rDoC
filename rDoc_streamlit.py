@@ -8,8 +8,7 @@ import openpyxl
 def load_excel(file):
     # Read the file, skipping the first three rows and setting the first column as index
     df = pd.read_excel(file, header=[0, 1], skiprows=[2], index_col=0)
-    # Create a multi-index using the metric and segment names
-    df.columns = pd.MultiIndex.from_tuples([tuple(c.split()) for c in df.columns])
+    # The columns are already in a tuple format, so no need to split them
     return df
 
 # Streamlit app
