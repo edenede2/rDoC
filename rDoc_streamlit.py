@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import openpyxl
+import numpy as np
 
 # Function to load and process the Excel file
 @st.cache_resource  # Updated caching function
@@ -10,11 +11,18 @@ def load_excel(file):
     return df
 
 # Function to detect outliers using IQR
-def detect_outliers(df, segment):
+def detect_outliers_iqr(df, segment):
     Q1 = df[segment].quantile(0.25)
     Q3 = df[segment].quantile(0.75)
     IQR = Q3 - Q1
     outliers = df[(df[segment] < (Q1 - 1.5 * IQR)) | (df[segment] > (Q3 + 1.5 * IQR))]
+    return outliers.index
+
+# Function to detect outliers using STD
+def detect_outliers_std(df, segment):
+    mean = df[segment].mean()
+    std = df[segment].std()
+    outliers = df[(df[segment] < (mean - 2 * std)) | (df[segment] > (mean + 2 * std))]
     return outliers.index
 
 # Streamlit app
@@ -46,12 +54,18 @@ def main():
         else:
             df_filtered = df.loc[~df.index.isin(exclude_subjects), selected_metric]
 
-        # Detect and optionally exclude outliers
+        # Outlier detection options
+        outlier_method = st.selectbox("Select Outlier Detection Method", ["IQR", "STD"])
         exclude_outliers = st.checkbox("Exclude Outliers")
-        outlier_indices = []
+        outlier_indices = set()
+
         if exclude_outliers:
             for segment in segments:
-                outlier_indices.extend(detect_outliers(df_filtered, segment))
+                if outlier_method == "IQR":
+                    outlier_indices.update(detect_outliers_iqr(df_filtered, segment))
+                elif outlier_method == "STD":
+                    outlier_indices.update(detect_outliers_std(df_filtered, segment))
+
             df_filtered = df_filtered.drop(index=outlier_indices, errors='ignore')
 
         # Calculating mean values across subjects for each segment
