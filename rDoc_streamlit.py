@@ -6,11 +6,11 @@ import openpyxl
 # Function to load and process the Excel file
 @st.cache_resource  # Updated caching function
 def load_excel(file):
-    # Assuming the first row contains the metrics and the second row contains segment names
-    df = pd.read_excel(file, header=[0, 1])
-    df.columns = ['_'.join(col).strip() for col in df.columns.values]
-    # Dropping any columns that are 'Unnamed'
-    df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+    # Reading the Excel file with the second row as header
+    df = pd.read_excel(file, header=1)
+    # Ensure that only numeric data is used in calculations
+    for col in df.columns[1:]:  # Assuming first column is not numeric
+        df[col] = pd.to_numeric(df[col], errors='coerce')
     return df
 
 # Streamlit app
@@ -24,8 +24,8 @@ def main():
         st.write("DataFrame Preview:")
         st.write(df)
 
-        # Metric selection (excluding 'Unnamed' options)
-        metric_options = [col for col in df.columns if 'Unnamed' not in col and col != df.columns[0]]
+        # Metric selection (excluding 'Unnamed' options and the first column)
+        metric_options = df.columns[1:].tolist()  # Assuming first column is for subjects
         selected_metric = st.selectbox("Select a Metric", metric_options)
 
         # Plot type selection
@@ -42,23 +42,23 @@ def main():
             df_filtered = df[df.iloc[:, 0] == isolate_subject]
         else:
             df_filtered = df if not exclude_subjects else df[~df.iloc[:, 0].isin(exclude_subjects)]
-        
+
         # Calculating mean across all subjects for each segment
-        segment_means = df_filtered.mean()
+        segment_means = df_filtered.mean(numeric_only=True)
 
-        # Extracting the relevant segment means for the selected metric
-        relevant_means = segment_means[[col for col in segment_means.index if selected_metric in col]]
-
-        # Display graph
+        # Creating the plot
         fig = None
-        if plot_type == 'line':
-            fig = px.line(x=relevant_means.index, y=relevant_means.values, title=f"{selected_metric} over Segments")
-        elif plot_type == 'bar':
-            fig = px.bar(x=relevant_means.index, y=relevant_means.values, title=f"{selected_metric} over Segments")
-        elif plot_type == 'scatter':
-            fig = px.scatter(x=relevant_means.index, y=relevant_means.values, title=f"{selected_metric} over Segments")
+        if plot_type in ['line', 'bar', 'scatter']:
+            if plot_type == 'line':
+                fig = px.line(x=df.columns[1:], y=segment_means.values, title=f"{selected_metric} over Segments")
+            elif plot_type == 'bar':
+                fig = px.bar(x=df.columns[1:], y=segment_means.values, title=f"{selected_metric} over Segments")
+            elif plot_type == 'scatter':
+                fig = px.scatter(x=df.columns[1:], y=segment_means.values, title=f"{selected_metric} over Segments")
 
-        if fig:
+            # Update layout for better readability
+            fig.update_layout(xaxis_title="Segment", yaxis_title=selected_metric, xaxis={'type':'category'})
+
             st.plotly_chart(fig)
 
 if __name__ == "__main__":
