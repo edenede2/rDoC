@@ -41,7 +41,7 @@ def main():
         selected_metric = st.selectbox("Select a Metric", metrics)
 
         # Segment names for the selected metric and option to exclude specific segments
-        all_segments = df[selected_metric].columns
+        all_segments = df[selected_metric].columns.tolist()  # Convert to list
         included_segments = st.multiselect("Include Segments", all_segments, default=all_segments)
 
         # Subject exclusion or isolation
