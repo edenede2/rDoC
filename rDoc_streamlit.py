@@ -132,7 +132,7 @@ def main():
 
         # Displaying removed outliers
         if outlier_info:
-            st.write("Removed Outliers:")
+            st.write("Outliers:")
             for subject, segment in outlier_info:
                 st.write(f"Subject: {subject}, Segment: {segment}")
 
