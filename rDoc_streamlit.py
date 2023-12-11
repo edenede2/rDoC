@@ -93,7 +93,9 @@ def main():
         # Calculating mean values across subjects for each segment
         segment_means = df_filtered[included_segments].mean()
         # Calculating standard deviation for each segment
+            # After calculating standard deviation
         segment_std = df_filtered[included_segments].std()
+        st.write("Standard Deviation for each segment:", segment_std)  # Debugging line
 
         # Alternatively, for standard error, you can use:
         # segment_se = df_filtered[included_segments].sem()
