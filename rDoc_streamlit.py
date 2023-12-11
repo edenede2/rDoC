@@ -92,7 +92,13 @@ def main():
         
         # Calculating mean values across subjects for each segment
         segment_means = df_filtered[included_segments].mean()
+        # Calculating standard deviation for each segment
+        segment_std = df_filtered[included_segments].std()
 
+        # Alternatively, for standard error, you can use:
+        # segment_se = df_filtered[included_segments].sem()
+        
+        
         # Plot type selection with additional options
         plot_types = ['line (with outliers)', 'scatter (individual values)', 'bar']
         plot_type = st.selectbox("Select Plot Type", plot_types)
@@ -109,9 +115,19 @@ def main():
         elif plot_type == 'line (with outliers)':
             # Calculating mean values across subjects for each segment
             segment_means = df_filtered[included_segments].mean()
-            fig.add_trace(go.Scatter(x=included_segments, y=segment_means.values, 
-                                     mode='lines', name='Mean'))
 
+            # Adding the line plot with error bars
+            fig.add_trace(go.Scatter(
+                x=included_segments, 
+                y=segment_means.values, 
+                mode='lines', 
+                name='Mean',
+                error_y=dict(
+                    type='data', # or 'percent' for percentage-based error bars
+                    array=segment_std.values, # or segment_se.values for standard error
+                    visible=True
+                )
+            ))
             # Adding outlier lines
             if exclude_outliers:
                 for segment in included_segments:
