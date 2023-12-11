@@ -94,11 +94,12 @@ def main():
         segment_means = df_filtered[included_segments].mean()
         # Calculating standard deviation for each segment
             # After calculating standard deviation
-        segment_std = df_filtered[included_segments].std()
+        segment_se = df_filtered[included_segments].sem()
         st.write("Standard Deviation for each segment:", segment_std)  # Debugging line
 
         # Alternatively, for standard error, you can use:
         # segment_se = df_filtered[included_segments].sem()
+        # segment_std = df_filtered[included_segments].std()
         
         
         # Plot type selection with additional options
@@ -126,7 +127,7 @@ def main():
                 name='Mean',
                 error_y=dict(
                     type='data', # or 'percent' for percentage-based error bars
-                    array=segment_std.values, # or segment_se.values for standard error
+                    array=segment_se.values, # or segment_se.values for standard error
                     visible=True
                 )
             ))
