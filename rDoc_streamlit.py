@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objs as go
 import openpyxl
 import numpy as np
 
@@ -78,18 +79,40 @@ def main():
         # Calculating mean values across subjects for each segment
         segment_means = df_filtered[included_segments].mean()
 
-        # Plot type selection
-        plot_types = ['line', 'bar', 'scatter']
+        # Plot type selection with additional options
+        plot_types = ['line (with outliers)', 'scatter (individual values)', 'bar']
         plot_type = st.selectbox("Select Plot Type", plot_types)
 
-        # Create the plot
-        fig = None
-        if plot_type == 'line':
-            fig = px.line(x=included_segments, y=segment_means.values, title=f"{selected_metric} over Segments")
+        # Create the plot based on selected type
+        fig = go.Figure()
+
+        if plot_type == 'scatter (individual values)':
+            for segment in included_segments:
+                for subj in df_filtered.index:
+                    fig.add_trace(go.Scatter(x=[segment], y=[df_filtered.loc[subj, segment]], 
+                                             mode='markers', name=subj))
+
+        elif plot_type == 'line (with outliers)':
+            # Calculating mean values across subjects for each segment
+            segment_means = df_filtered[included_segments].mean()
+            fig.add_trace(go.Scatter(x=included_segments, y=segment_means.values, 
+                                     mode='lines', name='Mean'))
+
+            # Adding outlier lines
+            if exclude_outliers:
+                for segment in included_segments:
+                    outliers = detect_outliers_iqr(df_filtered, segment) if outlier_method == "IQR" \
+                               else detect_outliers_std(df_filtered, segment)
+                    for index in outliers.index:
+                        fig.add_trace(go.Scatter(x=[segment, segment], 
+                                                 y=[outliers.loc[index, segment], outliers.loc[index, segment]], 
+                                                 mode='lines', marker_color='red', name=f'Outlier - {index}'))
+
         elif plot_type == 'bar':
-            fig = px.bar(x=included_segments, y=segment_means.values, title=f"{selected_metric} over Segments")
-        elif plot_type == 'scatter':
-            fig = px.scatter(x=included_segments, y=segment_means.values, title=f"{selected_metric} over Segments")
+            # Calculating mean values across subjects for each segment
+            segment_means = df_filtered[included_segments].mean()
+            fig = px.bar(x=included_segments, y=segment_means.values, 
+                         title=f"{selected_metric} over Segments")
 
         st.plotly_chart(fig)
 
