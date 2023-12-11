@@ -76,6 +76,20 @@ def main():
             outlier_indices = [info[0] for info in outlier_info]
             df_filtered = df_filtered.drop(index=outlier_indices, errors='ignore')
 
+        else:
+            for segment in included_segments:
+                if outlier_method == "IQR":
+                    outliers = detect_outliers_iqr(df_filtered, segment)
+                elif outlier_method == "STD":
+                    outliers = detect_outliers_std(df_filtered, segment)
+                
+                # Track outlier information
+                for index in outliers.index:
+                    outlier_info.append((index, segment))
+
+            # Remove outliers from the DataFrame
+            outlier_indices = [info[0] for info in outlier_info]
+        
         # Calculating mean values across subjects for each segment
         segment_means = df_filtered[included_segments].mean()
 
