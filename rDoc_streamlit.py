@@ -33,39 +33,30 @@ def calculate_summary(df, included_segments):
 
     # Check if the DataFrame has a multi-level column index
     if isinstance(df.columns, pd.MultiIndex):
-        # Multi-level column handling
+        # Handling for multi-level DataFrame
         for metric in df.columns.get_level_values(0).unique():
-            # Select columns for the metric
             metric_df = df.xs(metric, level=0, axis=1)
-
-            # Check if the segments are in the DataFrame
             valid_segments = [seg for seg in included_segments if seg in metric_df.columns]
 
-            # Calculate summary statistics for the valid segments
             summary_stats = metric_df[valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
 
             # Add 'out high' and 'out low'
-            summary_stats.loc['out high'] = summary_stats['mean'] + 2.5 * summary_stats['std']
-            summary_stats.loc['out low'] = summary_stats['mean'] - 2.5 * summary_stats['std']
+            summary_stats.loc['out high'] = summary_stats.loc['mean', :] + 2.5 * summary_stats.loc['std', :]
+            summary_stats.loc['out low'] = summary_stats.loc['mean', :] - 2.5 * summary_stats.loc['std', :]
 
-            # Create a multi-level column
             summary_stats.columns = pd.MultiIndex.from_product([[metric], summary_stats.columns])
 
-            # Append to the summary DataFrame
             summary_df = pd.concat([summary_df, summary_stats], axis=1)
     else:
-        # Single-level column handling
-        # Assuming df has single-level columns that are segments
+        # Handling for single-level DataFrame
         valid_segments = [seg for seg in included_segments if seg in df.columns]
 
-        # Calculate summary statistics for the valid segments
         summary_stats = df[valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
 
         # Add 'out high' and 'out low'
-        summary_stats.loc['out high'] = summary_stats['mean'] + 2.5 * summary_stats['std']
-        summary_stats.loc['out low'] = summary_stats['mean'] - 2.5 * summary_stats['std']
+        summary_stats.loc['out high'] = summary_stats.loc['mean'] + 2.5 * summary_stats.loc['std']
+        summary_stats.loc['out low'] = summary_stats.loc['mean'] - 2.5 * summary_stats.loc['std']
 
-        # Append to the summary DataFrame
         summary_df = pd.concat([summary_df, summary_stats], axis=1)
 
     return summary_df
