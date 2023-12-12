@@ -220,6 +220,9 @@ def main():
         included_segments = list(set(included_segments))
         summary_stats = calculate_summary(df_filtered, selected_metrics, included_segments)
         
+        if not included_segments:
+            st.warning("No valid segments found for the selected metrics.")
+            
         # Generate download link for the summary dataframe
         metrics_str = '_'.join(selected_metrics)
         download_filename = f"HRV_Summary_{metrics_str}.xlsx"
