@@ -232,6 +232,9 @@ def main():
         if not included_segments:
             st.warning("No valid segments found for the selected metrics.")
             
+        print("df_filtered structure:", df_filtered.head())
+        print("Included segments:", included_segments)
+        
         # Generate download link for the summary dataframe
         metrics_str = '_'.join(selected_metrics)
         download_filename = f"HRV_Summary_{metrics_str}.xlsx"
