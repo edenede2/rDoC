@@ -31,34 +31,35 @@ def detect_outliers_std(df, segment):
 def calculate_summary(df, selected_metrics, included_segments):
     summary_df = pd.DataFrame()
 
-    # Check if the DataFrame has a multi-level column index
     if isinstance(df.columns, pd.MultiIndex):
-        # Handling for multi-level DataFrame
         for metric in selected_metrics:
             if metric in df.columns.get_level_values(0):
                 metric_df = df.xs(metric, level=0, axis=1)
                 valid_segments = [seg for seg in included_segments if seg in metric_df.columns]
 
-                summary_stats = metric_df[valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
-                summary_stats.loc['out high'] = summary_stats['mean'] + 2.5 * summary_stats['std']
-                summary_stats.loc['out low'] = summary_stats['mean'] - 2.5 * summary_stats['std']
+                if valid_segments:
+                    summary_stats = metric_df[valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
+                    summary_stats.loc['out high'] = summary_stats['mean'] + 2.5 * summary_stats['std']
+                    summary_stats.loc['out low'] = summary_stats['mean'] - 2.5 * summary_stats['std']
 
-                summary_stats.index.name = 'Metric'
-                summary_stats.columns = pd.MultiIndex.from_product([[metric], summary_stats.columns])
+                    summary_stats.index.name = 'Metric'
+                    summary_stats.columns = pd.MultiIndex.from_product([[metric], summary_stats.columns])
 
-                summary_df = pd.concat([summary_df, summary_stats.reset_index()], axis=0)
+                    summary_df = pd.concat([summary_df, summary_stats.reset_index()], axis=0)
+                else:
+                    st.warning(f"No valid segments found for metric '{metric}'. Summary cannot be calculated.")
 
     else:
-        # Handling for single-level DataFrame
         valid_segments = [seg for seg in included_segments if seg in df.columns]
 
-        summary_stats = df[valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
+        if valid_segments:
+            summary_stats = df[valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
+            summary_stats.loc['out high'] = summary_stats['mean'] + 2.5 * summary_stats['std']
+            summary_stats.loc['out low'] = summary_stats['mean'] - 2.5 * summary_stats['std']
 
-        # Add 'out high' and 'out low'
-        summary_stats.loc['out high'] = summary_stats.loc['mean'] + 2.5 * summary_stats.loc['std']
-        summary_stats.loc['out low'] = summary_stats.loc['mean'] - 2.5 * summary_stats.loc['std']
-
-        summary_df = pd.concat([summary_df, summary_stats], axis=1)
+            summary_df = pd.concat([summary_df, summary_stats], axis=1)
+        else:
+            st.warning("No valid segments found. Summary cannot be calculated.")
 
     return summary_df
 
