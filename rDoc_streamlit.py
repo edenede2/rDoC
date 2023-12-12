@@ -35,18 +35,24 @@ def calculate_summary(df, included_segments):
     if isinstance(df.columns, pd.MultiIndex):
         # Handling for multi-level DataFrame
         for metric in df.columns.get_level_values(0).unique():
-            metric_df = df.xs(metric, level=0, axis=1)
+            metric_df = df.xs(metric, level=0, axis=1)  # Select columns for the metric
             valid_segments = [seg for seg in included_segments if seg in metric_df.columns]
-
+    
+            # Calculate summary statistics for the valid segments
             summary_stats = metric_df[valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
-
+            
             # Add 'out high' and 'out low'
-            summary_stats.loc['out high'] = summary_stats.loc['mean', :] + 2.5 * summary_stats.loc['std', :]
-            summary_stats.loc['out low'] = summary_stats.loc['mean', :] - 2.5 * summary_stats.loc['std', :]
-
+            summary_stats.loc['out high'] = summary_stats.loc['mean'] + 2.5 * summary_stats.loc['std']
+            summary_stats.loc['out low'] = summary_stats.loc['mean'] - 2.5 * summary_stats.loc['std']
+    
+            # Set the name of the index
+            summary_stats.index.name = 'Metric'
+    
+            # Formatting for multi-level columns
             summary_stats.columns = pd.MultiIndex.from_product([[metric], summary_stats.columns])
+    
+            summary_df = pd.concat([summary_df, summary_stats.reset_index()], axis=0)
 
-            summary_df = pd.concat([summary_df, summary_stats], axis=1)
     else:
         # Handling for single-level DataFrame
         valid_segments = [seg for seg in included_segments if seg in df.columns]
@@ -207,11 +213,15 @@ def main():
         
         # Calculate summary statistics after data processing
         metrics = df.columns.get_level_values(0).unique()  # Fetch unique metrics from the DataFrame
+        selected_metric = st.selectbox("Select a Metric", metrics)  # User selects a metric
+        included_segments = ...  # Code to determine included segments
         summary_stats = calculate_summary(df_filtered, included_segments)
-        
+
         # Generate download link for the summary dataframe
-        tmp_download_link = download_link(summary_stats, 'HRV_Summary.xlsx', 'Download Excel file with Summary')
+        download_filename = f"HRV_Summary_{selected_metric}.xlsx"
+        tmp_download_link = download_link(summary_stats, download_filename, 'Download Excel file with Summary')
         st.markdown(tmp_download_link, unsafe_allow_html=True)
+
         
 if __name__ == "__main__":
     main()
