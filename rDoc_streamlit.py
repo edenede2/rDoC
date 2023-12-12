@@ -35,8 +35,7 @@ def calculate_summary(df, selected_metrics, included_segments):
         for metric in selected_metrics:
             if metric in df.columns.get_level_values(0):
                 metric_df = df.xs(metric, level=0, axis=1)
-                valid_segments = [seg for seg in included_segments if seg in metric_df.columns]
-
+                valid_segments = [seg for seg in included_segments if seg in metric_df.columns.get_level_values(1)]
                 if valid_segments:
                     summary_stats = metric_df[valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
 
