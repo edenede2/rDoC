@@ -30,7 +30,10 @@ def detect_outliers_std(df, segment):
 
 def calculate_summary(df, included_segments):
     # Calculate summary statistics for each segment
-    summary_stats = df[included_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
+    summary = df[included_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
+    summary.loc['out high'] = summary.loc['mean'] + 2.5 * summary.loc['std']
+    summary.loc['out low'] = summary.loc['mean'] - 2.5 * summary.loc['std']
+
     return summary_stats
 
 def download_link(object_to_download, download_filename, download_link_text):
