@@ -212,7 +212,8 @@ def main():
 
         # Calculate summary statistics after data processing
         metrics = df.columns.get_level_values(0).unique().tolist()  # Convert to a standard list 
-        selected_metrics = st.multiselect("Select HRV Metrics for Summary", metrics, default=metrics)        included_segments = ...  # Code to determine included segments
+        selected_metrics = st.multiselect("Select HRV Metrics for Summary", metrics, default=metrics)
+        included_segments = df[selected_metrics].columns.tolist()  # Assuming segments are based on selected_metric
         summary_stats = calculate_summary(df_filtered, selected_metrics, included_segments)
         
         # Generate download link for the summary dataframe
