@@ -28,13 +28,26 @@ def detect_outliers_std(df, segment):
     outliers = df[(df[segment] < (mean - 2 * std)) | (df[segment] > (mean + 2 * std))]
     return outliers
 
-def calculate_summary(df, included_segments):
-    # Calculate summary statistics for each segment
-    summary = df[included_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
-    summary.loc['out high'] = summary.loc['mean'] + 2.5 * summary.loc['std']
-    summary.loc['out low'] = summary.loc['mean'] - 2.5 * summary.loc['std']
+def calculate_summary(df, metrics, included_segments):
+    # Create an empty DataFrame for the summary
+    summary_df = pd.DataFrame()
 
-    return summary
+    # Iterate through each metric and calculate summary statistics
+    for metric in metrics:
+        # Calculate summary statistics for each segment of the metric
+        summary_stats = df[metric][included_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
+
+        # Add 'out high' and 'out low'
+        summary_stats.loc['out high'] = summary_stats.loc['mean'] + 2.5 * summary_stats.loc['std']
+        summary_stats.loc['out low'] = summary_stats.loc['mean'] - 2.5 * summary_stats.loc['std']
+
+        # MultiIndex for columns (metric, segment)
+        summary_stats.columns = pd.MultiIndex.from_product([[metric], summary_stats.columns])
+
+        # Append to the summary DataFrame
+        summary_df = pd.concat([summary_df, summary_stats], axis=1)
+
+    return summary_df
 
 def download_link(object_to_download, download_filename, download_link_text):
     """
@@ -181,13 +194,11 @@ def main():
                 st.write(f"Subject: {subject}, Segment: {segment}")
         
         # Calculate summary statistics after data processing
-        summary_stats = calculate_summary(df_filtered, included_segments)
+        metrics = df.columns.get_level_values(0).unique()  # Fetch unique metrics from the DataFrame
+        summary_stats = calculate_summary(df_filtered, metrics, included_segments)
         
-        # Append summary to the original dataframe
-        combined_df = pd.concat([df, pd.DataFrame([['']*len(df.columns)], columns=df.columns), summary_stats])
-        
-        # Generate download link for the combined dataframe
-        tmp_download_link = download_link(combined_df, 'HRV_Summary.xlsx', 'Download Excel file with Summary')
+        # Generate download link for the summary dataframe
+        tmp_download_link = download_link(summary_stats, 'HRV_Summary.xlsx', 'Download Excel file with Summary')
         st.markdown(tmp_download_link, unsafe_allow_html=True)
         
 if __name__ == "__main__":
