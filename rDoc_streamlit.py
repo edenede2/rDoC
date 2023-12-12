@@ -95,8 +95,8 @@ def main():
 
         # Metric selection
         metrics = df.columns.get_level_values(0).unique()
-        selected_metric = st.selectbox("Select a Metric", metrics)
-
+        selected_metric = st.selectbox("Select a Metric", metrics, key="metric_selectbox")
+        
         # Segment names for the selected metric and option to exclude specific segments
         all_segments = df[selected_metric].columns.tolist()  # Convert to list
         included_segments = st.multiselect("Include Segments", all_segments, default=all_segments)
