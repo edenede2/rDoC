@@ -228,12 +228,12 @@ def main():
         # Ensure uniqueness of segments
         included_segments = list(set(included_segments))
         summary_stats = calculate_summary(df_filtered, selected_metrics, included_segments)
-        
+        st.write("df_filtered structure:", df_filtered.head())
+        st.write("Included segments:", included_segments)
         if not included_segments:
             st.warning("No valid segments found for the selected metrics.")
             
-        print("df_filtered structure:", df_filtered.head())
-        print("Included segments:", included_segments)
+
         
         # Generate download link for the summary dataframe
         metrics_str = '_'.join(selected_metrics)
