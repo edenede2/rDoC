@@ -31,23 +31,39 @@ def detect_outliers_std(df, segment):
 def calculate_summary(df, included_segments):
     summary_df = pd.DataFrame()
 
-    # Iterate over the first level of columns (metrics)
-    for metric in df.columns.get_level_values(0).unique():
-        # Extract the DataFrame for the metric, ensuring it's always a DataFrame
-        metric_df = df[[metric]]  # Note the double brackets
+    # Check if the DataFrame has a multi-level column index
+    if isinstance(df.columns, pd.MultiIndex):
+        # Multi-level column handling
+        for metric in df.columns.get_level_values(0).unique():
+            # Select columns for the metric
+            metric_df = df.xs(metric, level=0, axis=1)
 
-        # Check if the segments are in the DataFrame
-        valid_segments = [seg for seg in included_segments if seg in metric_df.columns.get_level_values(1)]
+            # Check if the segments are in the DataFrame
+            valid_segments = [seg for seg in included_segments if seg in metric_df.columns]
+
+            # Calculate summary statistics for the valid segments
+            summary_stats = metric_df[valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
+
+            # Add 'out high' and 'out low'
+            summary_stats.loc['out high'] = summary_stats['mean'] + 2.5 * summary_stats['std']
+            summary_stats.loc['out low'] = summary_stats['mean'] - 2.5 * summary_stats['std']
+
+            # Create a multi-level column
+            summary_stats.columns = pd.MultiIndex.from_product([[metric], summary_stats.columns])
+
+            # Append to the summary DataFrame
+            summary_df = pd.concat([summary_df, summary_stats], axis=1)
+    else:
+        # Single-level column handling
+        # Assuming df has single-level columns that are segments
+        valid_segments = [seg for seg in included_segments if seg in df.columns]
 
         # Calculate summary statistics for the valid segments
-        summary_stats = metric_df[metric][valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
+        summary_stats = df[valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
 
         # Add 'out high' and 'out low'
         summary_stats.loc['out high'] = summary_stats['mean'] + 2.5 * summary_stats['std']
         summary_stats.loc['out low'] = summary_stats['mean'] - 2.5 * summary_stats['std']
-
-        # Create a multi-level column
-        summary_stats.columns = pd.MultiIndex.from_product([[metric], summary_stats.columns])
 
         # Append to the summary DataFrame
         summary_df = pd.concat([summary_df, summary_stats], axis=1)
