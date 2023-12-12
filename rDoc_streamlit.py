@@ -211,9 +211,8 @@ def main():
         selected_metrics = st.multiselect("Select HRV Metrics for Summary", metrics, default=metrics)
 
         # Calculate summary statistics after data processing
-        metrics = df.columns.get_level_values(0).unique()  # Fetch unique metrics from the DataFrame
-        selected_metrics = st.selectbox("Select a Metric", metrics)  # User selects a metric
-        included_segments = ...  # Code to determine included segments
+        metrics = df.columns.get_level_values(0).unique().tolist()  # Convert to a standard list 
+        selected_metrics = st.multiselect("Select HRV Metrics for Summary", metrics, default=metrics)        included_segments = ...  # Code to determine included segments
         summary_stats = calculate_summary(df_filtered, selected_metrics, included_segments)
         
         # Generate download link for the summary dataframe
