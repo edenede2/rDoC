@@ -200,7 +200,7 @@ def main():
         
         # Calculate summary statistics after data processing
         metrics = df.columns.get_level_values(0).unique()  # Fetch unique metrics from the DataFrame
-        summary_stats = calculate_summary(df_filtered, included_segments)
+        summary_stats = calculate_summary(df_filtered, metrics, included_segments)
         
         # Generate download link for the summary dataframe
         tmp_download_link = download_link(summary_stats, 'HRV_Summary.xlsx', 'Download Excel file with Summary')
