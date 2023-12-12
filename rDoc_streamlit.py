@@ -212,7 +212,7 @@ def main():
 
         # Calculate summary statistics after data processing
         metrics = df.columns.get_level_values(0).unique()  # Fetch unique metrics from the DataFrame
-        selected_metric = st.selectbox("Select a Metric", metrics)  # User selects a metric
+        selected_metrics = st.selectbox("Select a Metric", metrics)  # User selects a metric
         included_segments = ...  # Code to determine included segments
         summary_stats = calculate_summary(df_filtered, selected_metrics, included_segments)
         
