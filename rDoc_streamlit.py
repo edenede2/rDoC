@@ -5,6 +5,7 @@ import plotly.graph_objs as go
 import openpyxl
 import numpy as np
 import io
+import base64
 
 # Function to load and process the Excel file
 @st.cache_resource  # Updated caching function
@@ -37,10 +38,15 @@ def download_link(object_to_download, download_filename, download_link_text):
     Generates a link to download the given object_to_download.
     """
     if isinstance(object_to_download, pd.DataFrame):
-        object_to_download = object_to_download.to_excel(index=False)
-    b64 = base64.b64encode(object_to_download.encode()).decode()
-    return f'<a href="data:file/xlsx;base64,{b64}" download="{download_filename}">{download_link_text}</a>'
+        # Create a BytesIO object and write the dataframe to it as Excel
+        towrite = BytesIO()
+        object_to_download.to_excel(towrite, index=False, engine='openpyxl')  # Make sure to use the 'openpyxl' engine
+        towrite.seek(0)  # Move back to the beginning after writing
+        b64 = base64.b64encode(towrite.read()).decode()  # Read and encode the Excel file
+    else:
+        b64 = base64.b64encode(object_to_download.encode()).decode()
 
+    return f'<a href="data:application/octet-stream;base64,{b64}" download="{download_filename}">{download_link_text}</a>'
 
 # Streamlit app
 def main():
