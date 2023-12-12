@@ -206,9 +206,6 @@ def main():
             for subject, segment in outlier_info:
                 st.write(f"Subject: {subject}, Segment: {segment}")
        
-        # Allow users to select multiple HRV metrics
-        metrics = df.columns.get_level_values(0).unique()
-        selected_metrics = st.multiselect("Select HRV Metrics for Summary", metrics, default=metrics)
 
         # Calculate summary statistics after data processing
         metrics = df.columns.get_level_values(0).unique().tolist()  # Convert to a standard list 
