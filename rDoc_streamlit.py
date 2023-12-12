@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.graph_objs as go
 import openpyxl
 import numpy as np
+import io
 
 # Function to load and process the Excel file
 @st.cache_resource  # Updated caching function
@@ -25,6 +26,21 @@ def detect_outliers_std(df, segment):
     std = df[segment].std()
     outliers = df[(df[segment] < (mean - 2 * std)) | (df[segment] > (mean + 2 * std))]
     return outliers
+
+def calculate_summary(df, included_segments):
+    # Calculate summary statistics for each segment
+    summary_stats = df[included_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
+    return summary_stats
+
+def download_link(object_to_download, download_filename, download_link_text):
+    """
+    Generates a link to download the given object_to_download.
+    """
+    if isinstance(object_to_download, pd.DataFrame):
+        object_to_download = object_to_download.to_excel(index=False)
+    b64 = base64.b64encode(object_to_download.encode()).decode()
+    return f'<a href="data:file/xlsx;base64,{b64}" download="{download_filename}">{download_link_text}</a>'
+
 
 # Streamlit app
 def main():
@@ -154,6 +170,16 @@ def main():
             st.write("Outliers:")
             for subject, segment in outlier_info:
                 st.write(f"Subject: {subject}, Segment: {segment}")
-
+        
+        # Calculate summary statistics after data processing
+        summary_stats = calculate_summary(df_filtered, included_segments)
+        
+        # Append summary to the original dataframe
+        combined_df = pd.concat([df, pd.DataFrame([['']*len(df.columns)], columns=df.columns), summary_stats])
+        
+        # Generate download link for the combined dataframe
+        tmp_download_link = download_link(combined_df, 'HRV_Summary.xlsx', 'Download Excel file with Summary')
+        st.markdown(tmp_download_link, unsafe_allow_html=True)
+        
 if __name__ == "__main__":
     main()
