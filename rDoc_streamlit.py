@@ -4,7 +4,7 @@ import plotly.express as px
 import plotly.graph_objs as go
 import openpyxl
 import numpy as np
-import io
+from io import BytesIO
 import base64
 
 # Function to load and process the Excel file
