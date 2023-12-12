@@ -39,8 +39,13 @@ def calculate_summary(df, selected_metrics, included_segments):
 
                 if valid_segments:
                     summary_stats = metric_df[valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
-                    summary_stats.loc['out high'] = summary_stats['mean'] + 2.5 * summary_stats['std']
-                    summary_stats.loc['out low'] = summary_stats['mean'] - 2.5 * summary_stats['std']
+
+                    # Check if 'mean' and 'std' are in the columns
+                    if 'mean' in summary_stats and 'std' in summary_stats:
+                        summary_stats.loc['out high'] = summary_stats['mean'] + 2.5 * summary_stats['std']
+                        summary_stats.loc['out low'] = summary_stats['mean'] - 2.5 * summary_stats['std']
+                    else:
+                        st.error("Error in aggregation: 'mean' or 'std' not found.")
 
                     summary_stats.index.name = 'Metric'
                     summary_stats.columns = pd.MultiIndex.from_product([[metric], summary_stats.columns])
@@ -54,8 +59,12 @@ def calculate_summary(df, selected_metrics, included_segments):
 
         if valid_segments:
             summary_stats = df[valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
-            summary_stats.loc['out high'] = summary_stats['mean'] + 2.5 * summary_stats['std']
-            summary_stats.loc['out low'] = summary_stats['mean'] - 2.5 * summary_stats['std']
+
+            if 'mean' in summary_stats and 'std' in summary_stats:
+                summary_stats.loc['out high'] = summary_stats['mean'] + 2.5 * summary_stats['std']
+                summary_stats.loc['out low'] = summary_stats['mean'] - 2.5 * summary_stats['std']
+            else:
+                st.error("Error in aggregation: 'mean' or 'std' not found.")
 
             summary_df = pd.concat([summary_df, summary_stats], axis=1)
         else:
