@@ -28,11 +28,11 @@ def detect_outliers_std(df, segment):
     outliers = df[(df[segment] < (mean - 2 * std)) | (df[segment] > (mean + 2 * std))]
     return outliers
 
-def calculate_summary(df, included_segments):
+def calculate_summary(df, metrics, included_segments):
     summary_df = pd.DataFrame()
 
-    # Iterate over the first level of columns (metrics)
-    for metric in df.columns.get_level_values(0).unique():
+    # Iterate over the provided metrics
+    for metric in metrics:
         # Extract the DataFrame for the metric
         metric_df = df[metric]
 
