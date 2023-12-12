@@ -33,18 +33,18 @@ def calculate_summary(df, included_segments):
 
     # Iterate over the first level of columns (metrics)
     for metric in df.columns.get_level_values(0).unique():
-        # Extract the DataFrame for the metric
-        metric_df = df[metric]
+        # Extract the DataFrame for the metric, ensuring it's always a DataFrame
+        metric_df = df[[metric]]  # Note the double brackets
 
         # Check if the segments are in the DataFrame
-        valid_segments = [seg for seg in included_segments if seg in metric_df.columns]
+        valid_segments = [seg for seg in included_segments if seg in metric_df.columns.get_level_values(1)]
 
         # Calculate summary statistics for the valid segments
-        summary_stats = metric_df[valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
+        summary_stats = metric_df[metric][valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
 
         # Add 'out high' and 'out low'
-        summary_stats.loc['out high'] = summary_stats.loc['mean'] + 2.5 * summary_stats.loc['std']
-        summary_stats.loc['out low'] = summary_stats.loc['mean'] - 2.5 * summary_stats.loc['std']
+        summary_stats.loc['out high'] = summary_stats['mean'] + 2.5 * summary_stats['std']
+        summary_stats.loc['out low'] = summary_stats['mean'] - 2.5 * summary_stats['std']
 
         # Create a multi-level column
         summary_stats.columns = pd.MultiIndex.from_product([[metric], summary_stats.columns])
