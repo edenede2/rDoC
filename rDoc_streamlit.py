@@ -44,7 +44,7 @@ def calculate_summary(df, selected_metrics, included_segments):
                         summary_stats.loc['out high'] = summary_stats['mean'] + 2.5 * summary_stats['std']
                         summary_stats.loc['out low'] = summary_stats['mean'] - 2.5 * summary_stats['std']
                     else:
-                        st.error("Error in aggregation: 'mean' or 'std' not found.")
+                        # st.error("Error in aggregation: 'mean' or 'std' not found.")
 
                     summary_stats.index.name = 'Metric'
                     summary_stats.columns = pd.MultiIndex.from_product([[metric], summary_stats.columns])
@@ -63,7 +63,7 @@ def calculate_summary(df, selected_metrics, included_segments):
                 summary_stats.loc['out high'] = summary_stats['mean'] + 2.5 * summary_stats['std']
                 summary_stats.loc['out low'] = summary_stats['mean'] - 2.5 * summary_stats['std']
             else:
-                st.error("Error in aggregation: 'mean' or 'std' not found.")
+                # st.error("Error in aggregation: 'mean' or 'std' not found.")
 
             summary_df = pd.concat([summary_df, summary_stats], axis=1)
         else:
@@ -227,8 +227,6 @@ def main():
         # Ensure uniqueness of segments
         included_segments = list(set(included_segments))
         summary_stats = calculate_summary(df_filtered, selected_metrics, included_segments)
-        st.write("df_filtered structure:", df_filtered.head())
-        st.write("Included segments:", included_segments)
         if not included_segments:
             st.warning("No valid segments found for the selected metrics.")
             
