@@ -28,20 +28,25 @@ def detect_outliers_std(df, segment):
     outliers = df[(df[segment] < (mean - 2 * std)) | (df[segment] > (mean + 2 * std))]
     return outliers
 
-def calculate_summary(df, metrics, included_segments):
-    # Create an empty DataFrame for the summary
+def calculate_summary(df, included_segments):
     summary_df = pd.DataFrame()
 
-    # Iterate through each metric and calculate summary statistics
-    for metric in metrics:
-        # Calculate summary statistics for each segment of the metric
-        summary_stats = df[metric][included_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
+    # Iterate over the first level of columns (metrics)
+    for metric in df.columns.get_level_values(0).unique():
+        # Extract the DataFrame for the metric
+        metric_df = df[metric]
+
+        # Check if the segments are in the DataFrame
+        valid_segments = [seg for seg in included_segments if seg in metric_df.columns]
+
+        # Calculate summary statistics for the valid segments
+        summary_stats = metric_df[valid_segments].agg(['mean', 'std', 'count', 'sem', 'min', 'max'])
 
         # Add 'out high' and 'out low'
         summary_stats.loc['out high'] = summary_stats.loc['mean'] + 2.5 * summary_stats.loc['std']
         summary_stats.loc['out low'] = summary_stats.loc['mean'] - 2.5 * summary_stats.loc['std']
 
-        # MultiIndex for columns (metric, segment)
+        # Create a multi-level column
         summary_stats.columns = pd.MultiIndex.from_product([[metric], summary_stats.columns])
 
         # Append to the summary DataFrame
