@@ -3,5 +3,4 @@ plotly.express
 pandas
 openpyxl
 numpy
-io
 base64
