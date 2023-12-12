@@ -28,11 +28,11 @@ def detect_outliers_std(df, segment):
     outliers = df[(df[segment] < (mean - 2 * std)) | (df[segment] > (mean + 2 * std))]
     return outliers
 
-def calculate_summary(df, metrics, included_segments):
+def calculate_summary(df, included_segments):
     summary_df = pd.DataFrame()
 
-    # Iterate over the provided metrics
-    for metric in metrics:
+    # Iterate over the first level of columns (metrics)
+    for metric in df.columns.get_level_values(0).unique():
         # Extract the DataFrame for the metric
         metric_df = df[metric]
 
@@ -200,7 +200,7 @@ def main():
         
         # Calculate summary statistics after data processing
         metrics = df.columns.get_level_values(0).unique()  # Fetch unique metrics from the DataFrame
-        summary_stats = calculate_summary(df_filtered, metrics, included_segments)
+        summary_stats = calculate_summary(df_filtered, included_segments)
         
         # Generate download link for the summary dataframe
         tmp_download_link = download_link(summary_stats, 'HRV_Summary.xlsx', 'Download Excel file with Summary')
